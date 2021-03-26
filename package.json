@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "Poker backend Server for TexasHoldem and Omaha",
   "scripts": {
-    "start": "nodemon app.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx ts-node app.ts"
   },
   "author": "Paritosh",
   "license": "UNLICENSED",
