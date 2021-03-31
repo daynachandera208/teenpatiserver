@@ -83,7 +83,7 @@ export class CardUtils {
 			let number = num % 13;
 			if(number == 0)
 				number = 13;
-			card.number = number;
+			card.num = number;
 			deck.push(card);
 		});
 		return deck;
@@ -135,7 +135,7 @@ export class CardUtils {
 				playerCardsToBeUsed.push(player.cards[playerCardUsed]);
 				playerCardUsed = (playerCardUsed + 1) % player.cards.length;
 				
-				previousCards.push(player.cards[playerCardUsed].number);
+				previousCards.push(player.cards[playerCardUsed].num);
 				previousSuits.push(player.cards[playerCardUsed].suit);
 				
 				nextPlayerCardIndex = (nextPlayerCardIndex + 1) % player.cards.length;
@@ -328,7 +328,6 @@ export class CardUtils {
 				pairs.push(Number(key));
 			}
 		}
-
 		// Ensure histogram arrays are sorted in descending order to build best hand top down
 		pairs = pairs.sort((a,b) => b - a);
 		
@@ -339,7 +338,7 @@ export class CardUtils {
 		let copyCards: ArraySchema<Card> = new ArraySchema<Card>();
 		cards.forEach((card) => {
 			let newCard: Card = new Card();
-			newCard.number = card.number;
+			newCard.num = card.num;
 			newCard.suit = card.suit;
 			// newCard.isHole = card.isHole;
 			copyCards.push(newCard);
@@ -352,7 +351,7 @@ export class CardUtils {
 		for(let i = 0; i < cards.length; i++) {
 			if(i !== skipIndex) {
 				let newCard: Card = new Card();
-				newCard.number = cards[i].number;
+				newCard.num = cards[i].num;
 				newCard.suit = cards[i].suit;
 				// newCard.isHole = cards[i].isHole;
 				copyCards.push(newCard);
@@ -366,7 +365,7 @@ export class CardUtils {
 		cards.forEach((card) => {
 			if(card.suit === suit) {
 				let newCard: Card = new Card();
-				newCard.number = card.number;
+				newCard.num = card.num;
 				newCard.suit = card.suit;
 				// newCard.isHole = card.isHole;
 				copyCards.push(newCard);

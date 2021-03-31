@@ -17,11 +17,11 @@ export class GameConfig {
     betDoubleInRound: string = undefined;
 
     setupConfig() {
-        this.minPlayers = 2;
+        this.minPlayers = 3;
         this.holeCards = 3;
         this.maxBlind = 3;
         this.minBet = 50;
-        this.maxPotLimit = 10000;
+        this.maxPotLimit = 1000;
         this.maxBetLimit = 1000;
     }
 }

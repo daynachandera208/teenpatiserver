@@ -4,6 +4,7 @@ import { GameState, Player, Card } from './State';
 import { CardUtils } from './utils/CardUtils';
 import { PlayerUtils } from './utils/PlayerUtils';
 import { GameConfig } from './GameConfig';
+import { flattenDiagnosticMessageText } from 'typescript';
 
 export class GameRoom extends Room<GameState> {
     playerCount: number = 0; //Tracks the number of players in the room
@@ -25,9 +26,15 @@ export class GameRoom extends Room<GameState> {
 
     public delayedInterval!: Delayed;
 
+    sideshowPlayers: MapSchema<Player> = new MapSchema<Player>(); //players details who made side-show
+
+    Seatting: ArraySchema<string>  = new ArraySchema<string>();
     //Create the Room
     onCreate(options: any) {
         // console.log("Hi");
+        for (let i = 0; i < 9; i++) {
+            this.Seatting[i]= "-1";
+        }
 
         console.log(`Room ${this.roomName} created with roomId ${this.roomId}`);
 
@@ -40,8 +47,12 @@ export class GameRoom extends Room<GameState> {
 
         this.pokerConfig = new GameConfig();
         this.pokerConfig.setupConfig();
+        
         // this.maxClients = options.maxClients;
         this.maxPlayer = options.maxClients;
+        
+        //
+
         //Set message handlers
         this.initializeMessageHandlers();
     }
@@ -52,15 +63,29 @@ export class GameRoom extends Room<GameState> {
             `Server: Client joined with id ${client.id} and sessionId ${client.sessionId}`
         );
 
+        var counter : number = 0;
+
+        let empty : number = this.Seatting.findIndex(x => x == "-1");
+        this.Seatting[empty] = client.sessionId; 
+        
+        console.log(this.Seatting);
+         
         //Create a new player and add to MapSchema
         let newplayer: Player = this.addPlayer(client.sessionId, client);
-        
+
         //this is temperary
-        this.state.players[this.playerCount] = newplayer;
-        this.state.players[this.playerCount].Seatnumber = this.playerCount;
-        this.state.Seating[client.sessionId] = this.playerCount.toString();
-        this.SeatingCount++;
+            this.state.players[this.playerCount] = newplayer;
+            this.state.players[this.playerCount].Seatnumber = this.playerCount;
+            this.state.Seating[client.sessionId] = this.playerCount.toString();
+            this.SeatingCount++;
         
+        //this is temperary 2
+            // this.state.players[empty] = newplayer;
+            // this.state.players[empty].Seatnumber = empty;
+            // this.state.Seating[client.sessionId] = empty.toString();
+            // this.SeatingCount++;
+        
+
         console.log("-=-=-=-=-=-joinSeating=-=>");
         console.log(this.state.Seating);
         console.log(this.state.players);
@@ -86,18 +111,22 @@ export class GameRoom extends Room<GameState> {
         try {
             //If consented, remove without wait
             //if (consented) {
-                this.removePlayer(client);
-                let teampseating = this.state.Seating[client.sessionId];
-               
-                delete this.state.players[teampseating];
-                delete this.state.Seating[client.sessionId];
+            this.removePlayer(client);
+            
+            let currSeat : number = this.Seatting.findIndex(x => x == client.sessionId);
+            this.Seatting[currSeat] = "-1";
+
+            let teampseating = this.state.Seating[client.sessionId];
+
+            delete this.state.players[teampseating];
+            delete this.state.Seating[client.sessionId];
 
 
-                console.log("-=-=-=-=-=-LeaveSeating=-=>"+teampseating);
-                console.log(this.state.Seating);
-                console.log(this.state.players);
-                
-           // }
+            console.log("-=-=-=-=-=-LeaveSeating=-=>" + teampseating);
+            console.log(this.state.Seating);
+            console.log(this.state.players);
+
+            // }
 
             //Wait for reconnection on connection lost
             // await this.allowReconnection(client, 20);
@@ -126,21 +155,29 @@ export class GameRoom extends Room<GameState> {
         //Message that the player is SitDown on that table
         this.onMessage(`SitDown`, (client, message) => {
             console.log(client.sessionId + " " + message);
+            
             this.state.players[message].Seatnumber = message;
             this.state.Seating[message] = client.sessionId;
+            this.Seatting[message] = client.sessionId;
             console.log(this.state.Seating);
             this.SeatingCount++;
 
         });
 
         this.onMessage('Standup', (client, message) => {
-           //this.state.players[client.sessionId].Seatnumber ;
+            //this.state.players[client.sessionId].Seatnumber ;
+            let find_the_index:number= this.Seatting.findIndex((x => x==client.sessionId))
+            this.Seatting[find_the_index] = "-1";
             delete this.state.Seating[client.sessionId];
             console.log(this.state.Seating);
+            this.SeatingCount--;
         });
 
-        this.onMessage("See",(client,message)=>{
-           this.state.players[this.state.Seating[client.sessionId]]
+        this.onMessage("See", (client, message) => {
+            this.state.players[this.state.Seating[client.sessionId]]
+            this.state.players[this.state.Seating[client.sessionId]].isBlind = false;
+            client.send("See", this.state.players[this.state.Seating[client.sessionId]])
+
         });
 
         //Message from client when makes a CALL
@@ -150,7 +187,8 @@ export class GameRoom extends Room<GameState> {
             }
             else {
                 let player: Player = this.state.players[message.activePlayerIndex];
-                if (message.player.isRaise) {
+                // if (message.player.isRaise) {
+                if (message.isRaise) {
                     this.state.currentBetBlind = this.state.currentBetBlind * 2;
                     this.state.currentBetChaal = this.state.currentBetBlind * 2;
                 } else {
@@ -167,8 +205,7 @@ export class GameRoom extends Room<GameState> {
 
                 this.state.pot += player.currentBet;
 
-                this.state.activePlayerIndex =
-                    (message.activePlayerIndex + 1) % this.playerCount;
+                this.check_Packed_player(message.activePlayerIndex);
 
                 client.send(`message`, `${this.state.players[message.activePlayerIndex].id} played blind`);
                 console.log(`Current active player pot is ${player.totalChips}`);
@@ -188,10 +225,12 @@ export class GameRoom extends Room<GameState> {
                 this.moveToNextPhase(`show`);
             } else {
                 let player: Player = this.state.players[message.activePlayerIndex];
-                if (player.totalBet == this.pokerConfig.maxBetLimit) {
+                if (player.totalBet >= this.pokerConfig.maxBetLimit) {
                     console.log("Bet limit reached!");
                 } else {
-                    if (message.player.isRaise) {
+                    // if (message.player.isRaise) 
+                    if(message.isRaise)
+                    {
                         this.state.currentBetChaal = this.state.currentBetChaal * 2;
                         this.state.currentBetBlind = this.state.currentBetChaal / 2;
                     } else {
@@ -209,13 +248,15 @@ export class GameRoom extends Room<GameState> {
 
                     this.state.pot += player.currentBet;
 
-                    this.state.activePlayerIndex =
-                        (message.activePlayerIndex + 1) % this.playerCount;
+                    this.check_Packed_player(message.activePlayerIndex);
 
                     client.send(`message`, `${this.state.players[message.activePlayerIndex].id} played chaal`);
                     console.log(`Current active player pot is ${player.totalChips}`);
 
                     player.isRaise = false;
+                    console.log("-=-=-=-=-=this.state.players-=-=-=-=-=-=->");
+                    console.log(this.state.players);
+                    
                     //Move to next step or Next Player
                     if (!this.moveToNextPhase(`next`))
                         this.broadcast(`nextPlayerMove`, this.state);
@@ -224,15 +265,48 @@ export class GameRoom extends Room<GameState> {
         });
 
         this.onMessage(`pack`, (client, message) => {
-            console.log(`Player with id ${message.player.id} is packed`);
-            delete this.state.players[message.activePlayerIndex];
-            this.playerCount--;
-
-            this.state.activePlayerIndex =
-                (message.activePlayerIndex + 1) % this.playerCount;
+           console.log(`Player with id ${client.id} is packed` + message);
+           // old code
+           // delete this.state.players[message.activePlayerIndex];
+           // this.state.activePlayerIndex =
+           //     (message.activePlayerIndex + 1) % this.playerCount;
+           // this.playerCount--;
+           //  this.state.activePlayerIndex =
+           //  ((message + 1) % this.playerCount);
+            
+            
+           // new code
+            this.state.players[this.state.activePlayerIndex].IsPack = true;
+            console.log(this.state.players[message.toString()].IsPack);
+            this.check_Packed_player(message);
 
             //Move to next step or Next Player
             if (!this.moveToNextPhase(`next`))
+                this.broadcast(`nextPlayerMove`, this.state);
+        });
+
+        //Message from client when made side-show
+        this.onMessage(`sideshow`, (client, message) => {
+            console.log(message.activePlayerIndex + ' / ' + this.state.activePlayerIndex);
+
+            if ((message.activePlayerIndex - 1) < 0) {
+                var prev = this.maxPlayer - 1;
+                if (prev === undefined) {
+                    prev = this.maxPlayer - 2;
+                }
+            } else {
+                var prev = message.activePlayerIndex - 1;
+                if (prev === undefined) {
+                    prev = message.activePlayerIndex - 2;
+                }
+            }
+            console.log(`Player with id ${message.player.id} made Side Show! to ${this.state.players[prev].id}`);
+
+            this.sideshowPlayers[message.player.id] = this.state.players[message.activePlayerIndex];
+            this.sideshowPlayers[this.state.players[prev].id] = this.state.players[prev];
+
+            //Move to next step or Next Player
+            if (!this.moveToNextPhase(`ss`))
                 this.broadcast(`nextPlayerMove`, this.state);
         });
     }
@@ -244,7 +318,7 @@ export class GameRoom extends Room<GameState> {
         }
 
         if (this.playerCount >= this.pokerConfig.minPlayers && this.locked) {
-            
+
             this.chooseBlinds();
             this.distributeCards(this.clients[0]);
 
@@ -263,27 +337,86 @@ export class GameRoom extends Room<GameState> {
 
             if (!this.moveToNextPhase(`next`)) {
                 this.broadcast(`nextPlayerMove`, this.state);
+                
             }
+            ;
         }
     }
+
     //adds a new player to the Room
     addPlayer(sessionId: string, client: Client): Player {
         let newPlayer: Player = new Player();
         newPlayer.id = sessionId;
-        newPlayer.totalChips = 2000;
+        newPlayer.totalChips = 80000;
         newPlayer.currentBet = 0;
         newPlayer.totalBet = 0;
         console.log(`New Player ${newPlayer.id} added Successfully!!`);
         this.player[sessionId] = newPlayer;
-       // this.state.players[sessionId] = newPlayer;
         return newPlayer;
     }
+
+    //this is the timer for the player move
+    startTimer(player: Player) {
+        this.clock.start();
+    
+        this.delayedInterval = this.clock.setInterval(() => {
+          this.broadcast("currentTimer", {
+            timer: this.clock.elapsedTime / 1000,
+            id: player.id,
+          });
+          console.log("Time now " + this.clock.elapsedTime / 1000);
+        }, 1000);
+    
+        // After 10 seconds clear the timeout;
+        // this will *stop and destroy* the timeout completely
+        this.clock.setTimeout(() => {
+            this.state.players[this.state.activePlayerIndex].IsPack = true;
+           // console.log(this.state.players[message.toString()].IsPack);
+            this.check_Packed_player(this.state.activePlayerIndex);
+
+            //Move to next step or Next Player
+            if (!this.moveToNextPhase(`next`))
+                this.broadcast(`nextPlayerMove`, this.state);
+          this.delayedInterval.clear();
+        }, 16_000);
+      }
+
+
 
     //removes a player from the Room
     removePlayer(client: Client) {
         delete this.state.players[client.sessionId];
         this.playerCount--;
         console.log(`${client.sessionId} Player removed!!`);
+    }
+
+    // this will call the and find the folded player
+    check_Packed_player(message) 
+    {
+        var flag:boolean = true;
+        var count:number = 0;
+         
+        console.log("-=-=check_Packed_player activePlayerIndex-=->"
+         + this.state.activePlayerIndex +
+          this.state.players[this.state.activePlayerIndex].IsPack);
+        
+          while(count<=this.playerCount)
+        {
+            this.state.activePlayerIndex =
+            ((message + 1 + count) % this.playerCount);
+            
+            count++;
+            console.log("count"+count);
+            console.log("this.state.players[this.state.activePlayerIndex].IsPack"+
+            this.state.players[this.state.activePlayerIndex].IsPack +" "+this.state.activePlayerIndex+" "+ this.playerCount);
+
+            if(!this.state.players[this.state.activePlayerIndex].IsPack)
+            {
+                console.log("-=-=check_Packed_player-=->");
+                console.log(this.state.players[this.state.activePlayerIndex].IsPack + " " +this.state.players[this.state.activePlayerIndex].id);
+                break;
+            }
+        }
     }
 
     clearState() {
@@ -309,7 +442,7 @@ export class GameRoom extends Room<GameState> {
                 player.cards.push(res.chosenCards[0]);
 
                 if (player.cards.length === this.pokerConfig.holeCards) {
-                    client.send('myinfo',JSON.stringify (player));
+                    client.send('myinfo', player.cards);
                 }
             }
         }
@@ -323,26 +456,61 @@ export class GameRoom extends Room<GameState> {
             this.playerCount
         );
         this.state.players[this.state.dealerIndex].isDealer = true;
+        console.log("-=-=-=-=dealerIndex-=-=-=>" + this.state.dealerIndex + " " + this.playerCount);
         this.state.activePlayerIndex = (this.state.dealerIndex + 1) % this.playerCount;
     }
 
     //Move to next phase if all players bets are equal else return false to move to next player
     moveToNextPhase(phase: string): boolean {
-
+        //this.startTimer(this.state.players[this.state.activePlayerIndex])
+        // if (this.state.players[this.state.activePlayerIndex] === undefined) {
+        //     this.state.activePlayerIndex = this.state.activePlayerIndex + 1;
+        // }
+    
         this.state.players[this.state.activePlayerIndex].currentBet = this.state.minBet;
 
         if (this.state.players[this.state.activePlayerIndex].currentBet === this.state.currentBet && phase !== `show`) {
             this.state.currentBet = this.state.minBet;
+            
+            //This will call when the slide show 
+            if (phase === `ss`) 
+            {
+                console.log(`SIDE SHOW`);
+        
+                this.sideshowPlayers = this.cardUtils.computeHands(
+                    this.sideshowPlayers,
+                    this.pokerConfig.holeCards,
+                    this.playerUtils.rankByHand
+                );
 
+                let winners: ArraySchema<Player> = this.playerUtils.determineWinners(
+                    this.sideshowPlayers
+                );
+
+                for (const i in this.sideshowPlayers) {
+                    if (i != winners[0].id) {
+                        for (const playerId in this.state.players) {                            
+                            if (this.state.players[playerId].id === this.sideshowPlayers[i].id) {
+                                console.log(`${this.state.players[playerId].id} is packed!`);
+                                delete this.state.players[playerId];
+                                this.playerCount--;
+                                this.state.activePlayerIndex = this.state.activePlayerIndex + 1;
+                            } 
+                        }
+                    }
+                } 
+                
+                this.sideshowPlayers = new MapSchema<Player>();
+            } 
             // console.log("Next Current Bet : "+this.state.currentBet);
             console.log(
                 `The previous Phase blind has pot ${this.state.pot}`
             );
-
-            this.broadcast(`nextPlayerMove`,JSON.stringify(this.state));
+            this.broadcast(`nextPlayerMove`, this.state);
             return true;
 
         }
+
         //When river then compute Hands because its SHOWDOWN time
         if (phase === `show`) {
             console.log(`SHOW DOWN TIME, COMPUTE THE HANDS`);

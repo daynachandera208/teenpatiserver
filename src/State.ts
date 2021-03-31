@@ -2,7 +2,7 @@ import { type, Schema, MapSchema, ArraySchema } from '@colyseus/schema';
 
 export class Card extends Schema {
     @type(`int32`)
-    number: number;
+    num: number;
 
     @type(`string`)
     suit: string;
@@ -50,6 +50,10 @@ export class Player extends Schema {
 
     @type(`int32`)
     Seatnumber :number ;
+
+    @type('boolean')
+    IsPack : boolean =  false;
+    
 }
   
 export class GameState extends Schema {
@@ -75,7 +79,7 @@ export class GameState extends Schema {
     currentBetChaal: number;
 
     @type([ Player ])
-    winningPlayers: ArraySchema<Player> = new ArraySchema<Player>()
+    winningPlayers: ArraySchema<Player> = new ArraySchema<Player>();
     
     @type(`int32`)
     pot: number = 0;
@@ -92,3 +96,4 @@ export class GameState extends Schema {
     @type({map:`string`})
     Seating: MapSchema<String> = new MapSchema<String>();
 }
+
