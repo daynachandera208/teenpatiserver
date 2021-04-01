@@ -420,13 +420,20 @@ export class GameRoom extends Room<GameState> {
     }
 
     clearState() {
-        this.state.currentBet = null;
-        this.state.currentBetBlind = null;
-        this.state.currentBetChaal = null;
-        this.state.winningPlayers.length = 0;
-        this.state.pot = null;
+
+        // this.state.currentBet = 0;
+        // this.state.currentBetBlind = 0;
+        // this.state.currentBetChaal = 0;
+        // this.state.winningPlayers.splice(0,this.state.winningPlayers.length);
+        // this.state.pot = 0;
         // this.state.isGameRunning = true;
-        this.state.deck.length = 0;
+        // this.state.deck.length = 0;
+        // this.state.players.forEach((key,value) => {
+        //     value.reset();
+        // });
+        this.state.reset();
+
+       
     }
 
     //distributes Cards to all players
@@ -527,20 +534,39 @@ export class GameRoom extends Room<GameState> {
                 this.state.winningPlayers.push(player);
             });
 
+            console.log("Send broadcast");
             this.state.isGameRunning = false;
-
-            this.clock.start();
-
-            this.delayedInterval = this.clock.setInterval(() => {
-                console.log("'Starting game!");
-
-            }, 1000);
+            
+            this.state.winningPlayers.forEach(value =>
+                {
+                    let winningprice=this.state.pot/this.state.winningPlayers.length
+                    value.totalChips +=winningprice;
+                });
+                
+            this.broadcast(`winning`, this.state.winningPlayers);
+            
+            
+            setTimeout(() => {
+                // this.broadcast("")
+                this.clock.start();
+                this.delayedInterval = this.clock.setInterval(() => {
+                    this.broadcast("timer","Starting newgame in: "+ Math.floor(this.clock.elapsedTime/1000));
+                     console.log("'Starting game!");
+                 }, 1000);
+            }, 5_000);
+            
+            // this.delayedInterval = this.clock.setInterval(() => {
+            //    // this.broadcast("")
+            //     console.log("'Starting game!");
+            // }, 1000);
 
             this.clock.setTimeout(() => {
+                console.log("this.clock.setTimeout-=-=>");
+                
+                this.clearState();
+                this.startGame();
                 this.delayedInterval.clear();
-            }, 5_000);
-            this.clearState();
-            this.startGame();
+            }, 10_000);
 
             return true;
         }

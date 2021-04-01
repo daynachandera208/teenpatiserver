@@ -53,6 +53,28 @@ export class Player extends Schema {
 
     @type('boolean')
     IsPack : boolean =  false;
+
+    reset(){
+    this.cards.splice(0,this.cards.length);
+    this.hand = undefined;
+    this.currentBet = 0;
+    this.totalBet = 0;
+    this.bestHand.splice(0,this.bestHand.length);
+    
+    for(let key in this.cardFrequency){
+        delete this.cardFrequency[key];
+    }
+
+    for(let key in this.suitFrequency){
+        delete this.suitFrequency[key];
+    }
+
+    this.isBlind = true;
+    this.isRaise = false;
+    this.isDealer = false;
+    this.IsPack = false;
+    this.blindsPerGame = 0;
+    }
     
 }
   
@@ -95,5 +117,19 @@ export class GameState extends Schema {
 
     @type({map:`string`})
     Seating: MapSchema<String> = new MapSchema<String>();
+
+    reset()
+    {
+        this.currentBet = 0;
+        this.currentBetBlind = 0;
+        this.currentBetChaal = 0;
+        this.winningPlayers.splice(0,this.winningPlayers.length);
+        this.deck.splice(0,this.deck.length);
+        this.pot = 0;
+
+        for(let key in this.players){
+            this.players[key].reset();
+        }
+    }
 }
 

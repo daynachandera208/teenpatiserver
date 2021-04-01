@@ -51,8 +51,15 @@ export class PlayerUtils {
     let sortCards: ArraySchema<number> = new ArraySchema<number>();
 
     if (winningPlayers.length > 1) {
-      for(let i = 0; i < winningPlayers.length; i++) {
+      for(let i = 0; i < winningPlayers.length; i++) 
+      {
+        //old code
         sortCards.length = 0;
+        
+        //new code
+        //sortCards.splice(0,sortCards.length);
+        console.log("-=-=-=-sortCards=-=-=-=->"+sortCards.length);
+
         for (let j = 0; j < players[winningPlayers[i]].cards.length; j++) {
           sortCards.push(players[winningPlayers[i]].cards[j].number);
           sortCards.sort((a,b) => { return b-a });         
