@@ -54,15 +54,16 @@ export class PlayerUtils {
       for(let i = 0; i < winningPlayers.length; i++) 
       {
         //old code
-        sortCards.length = 0;
-        
+        sortCards.length = 0;  
         //new code
         //sortCards.splice(0,sortCards.length);
         console.log("-=-=-=-sortCards=-=-=-=->"+sortCards.length);
 
         for (let j = 0; j < players[winningPlayers[i]].cards.length; j++) {
           sortCards.push(players[winningPlayers[i]].cards[j].number);
-          sortCards.sort((a,b) => { return b-a });         
+          sortCards.sort((a,b) => { return b-a }); 
+          console.log(sortCards);
+                  
         } 
         if (players[winningPlayers[i]].hand == 'Pair') {
           for (var j = 0; j < sortCards.length - 1; j++) {

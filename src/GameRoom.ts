@@ -420,20 +420,7 @@ export class GameRoom extends Room<GameState> {
     }
 
     clearState() {
-
-        // this.state.currentBet = 0;
-        // this.state.currentBetBlind = 0;
-        // this.state.currentBetChaal = 0;
-        // this.state.winningPlayers.splice(0,this.state.winningPlayers.length);
-        // this.state.pot = 0;
-        // this.state.isGameRunning = true;
-        // this.state.deck.length = 0;
-        // this.state.players.forEach((key,value) => {
-        //     value.reset();
-        // });
         this.state.reset();
-
-       
     }
 
     //distributes Cards to all players
