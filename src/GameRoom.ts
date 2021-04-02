@@ -50,8 +50,6 @@ export class GameRoom extends Room<GameState> {
         
         // this.maxClients = options.maxClients;
         this.maxPlayer = options.maxClients;
-        
-        //
 
         //Set message handlers
         this.initializeMessageHandlers();
@@ -126,8 +124,11 @@ export class GameRoom extends Room<GameState> {
             console.log(this.state.Seating);
             console.log(this.state.players);
 
+            if(this.state.isGameRunning)
+            {
+                
+            }
             // }
-
             //Wait for reconnection on connection lost
             // await this.allowReconnection(client, 20);
             // console.log(
@@ -337,9 +338,7 @@ export class GameRoom extends Room<GameState> {
 
             if (!this.moveToNextPhase(`next`)) {
                 this.broadcast(`nextPlayerMove`, this.state);
-                
-            }
-            ;
+            }``
         }
     }
 
@@ -419,21 +418,9 @@ export class GameRoom extends Room<GameState> {
         }
     }
 
-    clearState() {
-
-        // this.state.currentBet = 0;
-        // this.state.currentBetBlind = 0;
-        // this.state.currentBetChaal = 0;
-        // this.state.winningPlayers.splice(0,this.state.winningPlayers.length);
-        // this.state.pot = 0;
-        // this.state.isGameRunning = true;
-        // this.state.deck.length = 0;
-        // this.state.players.forEach((key,value) => {
-        //     value.reset();
-        // });
-        this.state.reset();
-
-       
+    clearState() 
+    {
+        this.state.reset();   
     }
 
     //distributes Cards to all players
@@ -550,7 +537,7 @@ export class GameRoom extends Room<GameState> {
                 // this.broadcast("")
                 this.clock.start();
                 this.delayedInterval = this.clock.setInterval(() => {
-                    this.broadcast("timer","Starting newgame in: "+ Math.floor(this.clock.elapsedTime/1000));
+                    this.broadcast("timer",Math.floor(this.clock.elapsedTime/1000));
                      console.log("'Starting game!");
                  }, 1000);
             }, 5_000);

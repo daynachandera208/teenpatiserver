@@ -123,6 +123,7 @@ export class GameState extends Schema {
         this.currentBet = 0;
         this.currentBetBlind = 0;
         this.currentBetChaal = 0;
+        this.minBet = 0;
         this.winningPlayers.splice(0,this.winningPlayers.length);
         this.deck.splice(0,this.deck.length);
         this.pot = 0;

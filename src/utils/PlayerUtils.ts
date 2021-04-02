@@ -27,8 +27,7 @@ export class PlayerUtils {
         winningPlayers.push(key);
         console.log(`1 WinningPlayerIndex ${JSON.stringify(winningPlayers)}`);
         continue;
-      }
-
+      }                                                                                                                       
       let curWinningHand: number = this.rankByHand.indexOf(players[key].hand);
       if(curWinningHand <= winningHand) {
         if(curWinningHand === winningHand) {
@@ -43,6 +42,8 @@ export class PlayerUtils {
         }
       }
     }
+    console.log("-=-=-=winningPlayers-=-=-=->");
+    console.log(winningPlayers)
 
     let winners: ArraySchema<Player> = new ArraySchema<Player>();
     let previousCards: MapSchema<any> = new MapSchema<any>();
@@ -57,12 +58,13 @@ export class PlayerUtils {
         sortCards.length = 0;
         
         //new code
-        //sortCards.splice(0,sortCards.length);
-        console.log("-=-=-=-sortCards=-=-=-=->"+sortCards.length);
+        sortCards.splice(0,sortCards.length);
+        //console.log("-=-=-=-sortCards=-=-=-=->"+sortCards.length);
 
         for (let j = 0; j < players[winningPlayers[i]].cards.length; j++) {
           sortCards.push(players[winningPlayers[i]].cards[j].number);
-          sortCards.sort((a,b) => { return b-a });         
+          sortCards.sort((a,b) => { return b-a });
+         // console.log(sortCards);            
         } 
         if (players[winningPlayers[i]].hand == 'Pair') {
           for (var j = 0; j < sortCards.length - 1; j++) {
