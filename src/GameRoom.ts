@@ -251,7 +251,7 @@ export class GameRoom extends Room<GameState> {
 
                     this.check_Packed_player(message.activePlayerIndex);
 
-                    client.send(`message`, `${this.state.players[message.activePlayerIndex].id} played chaal`);
+                   // client.send(`message`, `${this.state.players[message.activePlayerIndex].id} played chaal`);
                     console.log(`Current active player pot is ${player.totalChips}`);
 
                     player.isRaise = false;
@@ -436,7 +436,7 @@ export class GameRoom extends Room<GameState> {
                 player.cards.push(res.chosenCards[0]);
 
                 if (player.cards.length === this.pokerConfig.holeCards) {
-                    client.send('myinfo', player.cards);
+                    //client.send('myinfo', player.cards);
                 }
             }
         }
