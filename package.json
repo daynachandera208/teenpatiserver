@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Poker backend Server for TexasHoldem and Omaha",
   "scripts": {
-   "start": "npx ts-node ./app.ts
+   "start": "npx ts-node ./app.ts"
   },
   "engines": {
     "node": "14.15.4",
