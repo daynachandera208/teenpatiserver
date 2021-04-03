@@ -553,7 +553,7 @@ export class GameRoom extends Room<GameState> {
                 this.clearState();
                 this.startGame();
                 this.delayedInterval.clear();
-            }, 10_000);
+            }, 12_000);
 
             return true;
         }
