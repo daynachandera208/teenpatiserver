@@ -17,7 +17,7 @@ export class GameConfig {
     betDoubleInRound: string = undefined;
 
     setupConfig() {
-        this.minPlayers = 3;
+        this.minPlayers = 2;
         this.holeCards = 3;
         this.maxBlind = 3;
         this.minBet = 50;
@@ -25,7 +25,7 @@ export class GameConfig {
         this.maxBetLimit = 1000;
     }
     setupRoyalConfig() {
-        this.minPlayers = 3;
+        this.minPlayers = 2;
         this.holeCards = 4;
         this.maxBlind = 3;
         this.minBet = 50;
