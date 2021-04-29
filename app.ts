@@ -29,7 +29,7 @@ gameServer.define('RTD', RoyalThreeDifference).filterBy(['maxClients']);
 
 // register colyseus monitor AFTER registering your room handlers
 app.use("/colyseus", monitor());
-app.use('/api', require('./dbscripts/src/routes'))
+//app.use('/api', require('./dbscripts/src/routes'))
 
 gameServer.listen(port);
 console.log(`Listening on ws://localhost:${ port }`)
