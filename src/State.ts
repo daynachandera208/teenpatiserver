@@ -6,6 +6,12 @@ export class Card extends Schema {
 
     @type(`string`)
     suit: string;
+
+    constructor(newNum?: number, newSuit?:string) {
+        super();
+        this.num = newNum;
+        this.suit = newSuit;
+    }
 }
 
 export class Player extends Schema {
@@ -51,15 +57,25 @@ export class Player extends Schema {
     @type(`int32`)
     Seatnumber :number ;
 
-    @type('boolean')
+    @type(`boolean`)
     IsPack : boolean =  false;
+
+    @type([Card])
+    replacedCards : ArraySchema<Card> = new ArraySchema<Card>();
+
+    @type(`boolean`)
+    IsSS: boolean = false;
+
+    @type(`int32`)
+    newCardCount: number = 0;
 
     reset(){
     this.cards.splice(0,this.cards.length);
+    this.bestHand.splice(0,this.bestHand.length);
     this.hand = undefined;
+    this.blindsPerGame = 0;
     this.currentBet = 0;
     this.totalBet = 0;
-    this.bestHand.splice(0,this.bestHand.length);
     
     for(let key in this.cardFrequency){
         delete this.cardFrequency[key];
@@ -73,7 +89,9 @@ export class Player extends Schema {
     this.isRaise = false;
     this.isDealer = false;
     this.IsPack = false;
-    this.blindsPerGame = 0;
+    this.replacedCards.splice(0,this.replacedCards.length);
+    this.IsSS = false;
+    this.newCardCount = 0;
     }
     
 }
@@ -118,8 +136,18 @@ export class GameState extends Schema {
     @type({map:`string`})
     Seating: MapSchema<String> = new MapSchema<String>();
 
+    @type(Card)
+    jokerCard: Card = new Card();
+
+    @type(`boolean`)
+    IsShowPossible: boolean = false;
+
     reset()
     {
+        for(let key in this.players){
+            this.players[key].reset();
+        }
+        
         this.currentBet = 0;
         this.currentBetBlind = 0;
         this.currentBetChaal = 0;
@@ -127,10 +155,8 @@ export class GameState extends Schema {
         this.winningPlayers.splice(0,this.winningPlayers.length);
         this.deck.splice(0,this.deck.length);
         this.pot = 0;
+        this.IsShowPossible = false;
 
-        for(let key in this.players){
-            this.players[key].reset();
-        }
     }
 }
 

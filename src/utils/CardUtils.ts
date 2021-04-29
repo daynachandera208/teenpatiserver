@@ -286,12 +286,20 @@ export class CardUtils {
 	checkStraight(cards: ArraySchema<number>, forLow: boolean) {
 		let seq = false;
 		for (let i = 0; i < cards.length; i++) {
-			if (i == 0) {} 
+			if (i == 0) {}	
 			else {
-				if (cards[i] - cards[i - 1] == 1 && cards[i + 1] - cards[i] == 1) {
+				
+				if(cards[2]==13 && cards[1]==2 && cards[0]==1)
+				{
 					seq = true;
 					return seq;
-				} else {
+				}
+				else if (cards[i] - cards[i - 1] == 1 && cards[i + 1] - cards[i] == 1) 
+				{
+					seq = true;
+					return seq;
+				} else 
+				{
 					seq = false;
 					return seq;
 				}

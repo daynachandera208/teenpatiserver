@@ -21,7 +21,15 @@ export class GameConfig {
         this.holeCards = 3;
         this.maxBlind = 3;
         this.minBet = 50;
-        this.maxPotLimit = 200;
+        this.maxPotLimit = 1000;
+        this.maxBetLimit = 1000;
+    }
+    setupRoyalConfig() {
+        this.minPlayers = 3;
+        this.holeCards = 4;
+        this.maxBlind = 3;
+        this.minBet = 50;
+        this.maxPotLimit = 1000;
         this.maxBetLimit = 1000;
     }
 }
